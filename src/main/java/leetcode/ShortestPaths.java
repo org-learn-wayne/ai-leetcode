@@ -33,20 +33,25 @@ public final class ShortestPaths {
             }
         }
 
-        public HashMap<Integer, Ngbr> dijkstra(int src, int dst) {
+        // Returned list ordered from [src, dst).
+        public List<Ngbr> dijkstra(int src, int dst) {
             var visited = new HashSet<Integer>();
-            var toVist = new ArrayList<Integer>();
+            var toVist = new PriorityQueue<Ngbr>((l, r) -> Integer.compare(l.weight, r.weight));
             var nodeAndParent = new HashMap<Integer, Ngbr>();
 
-            toVist.add(src);
+            toVist.offer(new Ngbr(src, 0));
             nodeAndParent.put(src, new Ngbr(-1, 0)); // Start from the source node with no parent and zero cost
 
             while(!toVist.isEmpty()) {
-                var curr = toVist.removeLast();
+                var temp = toVist.poll();
+                var curr = temp.ngbrID;
+                var currCost = temp.weight;
+
                 visited.add(curr);
+
                 for(var ngbr : nodeToNgbrs.get(curr)) {
                     if(!visited.contains(ngbr.ngbrID)) {
-                        toVist.add(ngbr.ngbrID);
+                        toVist.offer(new Ngbr(ngbr.ngbrID, currCost + ngbr.weight));
                     }
 
                     var parentForCurr = nodeAndParent.get(curr);
@@ -61,7 +66,18 @@ public final class ShortestPaths {
                     }
                 }   
             }
-            return nodeAndParent;
+
+            return toList(nodeAndParent, src, dst);
+        }
+        List<Ngbr> toList(Map<Integer, Ngbr> nodeAndParent, int src, int dst) {
+            var path = new ArrayList<Ngbr>();
+            for(var node = dst; node!=src; ){
+                var parent = nodeAndParent.get(node);
+                path.add(parent);
+                node = parent.ngbrID();
+            }
+            Collections.reverse(path);
+            return path;
         }
 
         public void dijkstra1() {
