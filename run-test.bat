@@ -1,0 +1,3 @@
+set _TEST_CLASS=%1
+@ECHO Run tests in class %_TEST_CLASS% ...
+mvn test -Dsurefire.redirectTestOutputToFile=false -Dtest=%_TEST_CLASS%
