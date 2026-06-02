@@ -2,3 +2,6 @@ target/
 .m2/
 .vscode/
 debug.log
+.postman/
+postman/
+*.log
