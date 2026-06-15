@@ -215,8 +215,8 @@ public class KruskalMST {
         for(var edge : edges) {
             int a = edge.get(0);
             int b = edge.get(1);
-            int rootA = find(parent, a);
-            int rootB = find(parent, b);
+            int rootA = findAndCompress(parent, a);
+            int rootB = findAndCompress(parent, b);
             if(rootA == rootB) continue;
             union(parent, rank, rootA, rootB);
             totalWeight += edge.get(2);
@@ -225,15 +225,34 @@ public class KruskalMST {
         return totalWeight;
     }
 
-    static int find(Map<Integer, Integer> parent, int node) {
+    /**
+     * Find the representative (root) of the set containing {@code node}.
+     * This method performs path compression and will modify the {@code parent}
+     * map so that nodes visited on the way to the root point directly to the root.
+     *
+     * @param parent map from node to parent (may be updated)
+     * @param node node to find
+     * @return root representative of the node's set
+     */
+    static int findAndCompress(Map<Integer, Integer> parent, int node) {
         parent.putIfAbsent(node, node);
         int p = parent.get(node);
         if(p == node) return node;
-        int r = find(parent, p);
+        int r = findAndCompress(parent, p);
         parent.put(node, r);
         return r;
     }
 
+    /**
+     * Union two sets identified by their roots {@code ra} and {@code rb}.
+     * Uses union-by-rank heuristic and updates both {@code parent} and
+     * {@code rank} maps accordingly.
+     *
+     * @param parent map from node to parent (will be updated)
+     * @param rank map storing tree rank/approximate height (will be updated)
+     * @param ra root of first set
+     * @param rb root of second set
+     */
     static void union(Map<Integer, Integer> parent, Map<Integer, Integer> rank, int ra, int rb) {
         int rra = rank.getOrDefault(ra, 0);
         int rrb = rank.getOrDefault(rb, 0);
