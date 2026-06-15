@@ -198,16 +198,17 @@ public class KruskalMST {
         }
         edges.sort((l, r) -> Integer.compare(l.get(2), r.get(2)));
 
-        var maxNode = gNodes;
-        for(var edge : edges) {
-            maxNode = Math.max(maxNode, Math.max(edge.get(0), edge.get(1)));
-        }
+        // Use map-based DSU to support sparse node ids
+        var parent = new HashMap<Integer, Integer>();
+        var rank = new HashMap<Integer, Integer>();
 
-        var parent = new int[maxNode + 1];
-        var rank = new int[maxNode + 1];
-        for(int i = 1; i <= maxNode; i++) {
-            parent[i] = i;
-            rank[i] = 0;
+        for(var edge : edges) {
+            int a = edge.get(0);
+            int b = edge.get(1);
+            parent.putIfAbsent(a, a);
+            parent.putIfAbsent(b, b);
+            rank.putIfAbsent(a, 0);
+            rank.putIfAbsent(b, 0);
         }
 
         var totalWeight = 0;
@@ -224,21 +225,25 @@ public class KruskalMST {
         return totalWeight;
     }
 
-    static int find(int[] parent, int node) {
-        if(parent[node] == node) {
-            return node;
-        }
-        return parent[node] = find(parent, parent[node]);
+    static int find(Map<Integer, Integer> parent, int node) {
+        parent.putIfAbsent(node, node);
+        int p = parent.get(node);
+        if(p == node) return node;
+        int r = find(parent, p);
+        parent.put(node, r);
+        return r;
     }
 
-    static void union(int[] parent, int[] rank, int rootA, int rootB) {
-        if(rank[rootA] < rank[rootB]) {
-            parent[rootA] = rootB;
-        } else if(rank[rootB] < rank[rootA]) {
-            parent[rootB] = rootA;
+    static void union(Map<Integer, Integer> parent, Map<Integer, Integer> rank, int ra, int rb) {
+        int rra = rank.getOrDefault(ra, 0);
+        int rrb = rank.getOrDefault(rb, 0);
+        if(rra < rrb) {
+            parent.put(ra, rb);
+        } else if(rrb < rra) {
+            parent.put(rb, ra);
         } else {
-            parent[rootB] = rootA;
-            rank[rootA]++;
+            parent.put(rb, ra);
+            rank.put(ra, rra + 1);
         }
     }
 }
