@@ -227,6 +227,64 @@ public class KruskalMST {
         nodeToRoot.put(rootB, rootA);
         return true;
     }
+
+    public static class ClassicKruskals {
+        public static int kruskals(int gNodes, List<Integer> gFrom, List<Integer> gTo, List<Integer> gWeight) {
+            var edges = new ArrayList<List<Integer>>(gFrom.size());
+            for(var i=0; i<gFrom.size(); i++) {
+                if(gFrom.get(i) < gTo.get(i)) {
+                    edges.add(List.of(gFrom.get(i), gTo.get(i), gWeight.get(i)));
+                } else {
+                    edges.add(List.of(gTo.get(i), gFrom.get(i), gWeight.get(i)));
+                }
+            }
+            edges.sort((l, r) -> Integer.compare(l.get(2), r.get(2)));
+
+            var maxNode = gNodes;
+            for(var edge : edges) {
+                maxNode = Math.max(maxNode, Math.max(edge.get(0), edge.get(1)));
+            }
+
+            var parent = new int[maxNode + 1];
+            var rank = new int[maxNode + 1];
+            for(int i = 1; i <= maxNode; i++) {
+                parent[i] = i;
+                rank[i] = 0;
+            }
+
+            var totalWeight = 0;
+            for(var edge : edges) {
+                int a = edge.get(0);
+                int b = edge.get(1);
+                int rootA = find(parent, a);
+                int rootB = find(parent, b);
+                if(rootA == rootB) continue;
+                union(parent, rank, rootA, rootB);
+                totalWeight += edge.get(2);
+            }
+
+            return totalWeight;
+        }
+
+        static int find(int[] parent, int node) {
+            if(parent[node] == node) {
+                return node;
+            }
+            return parent[node] = find(parent, parent[node]);
+        }
+
+        static void union(int[] parent, int[] rank, int rootA, int rootB) {
+            if(rank[rootA] < rank[rootB]) {
+                parent[rootA] = rootB;
+            } else if(rank[rootB] < rank[rootA]) {
+                parent[rootB] = rootA;
+            } else {
+                parent[rootB] = rootA;
+                rank[rootA]++;
+            }
+        }
+    }
+
     static boolean formCycle(Map<Integer, Integer> nodeToRoot, List<Integer> edge) {
         var nodeA = edge.get(0);
         var nodeB = edge.get(1);

@@ -28,6 +28,14 @@ public class KruskalMSTTest {
         Bar.writeToList(new ArrayList<>(List.of(123,234,345,213)));
     }
 
+    private static int assertBothKruskalImplementationsAgree(int expected, List<Integer> froms, List<Integer> tos, List<Integer> weights) {
+        var actual = KruskalMST.kruskals(1, froms, tos, weights);
+        var classic = KruskalMST.ClassicKruskals.kruskals(1, froms, tos, weights);
+        assertEquals(actual, classic, "Kruskal implementations should agree");
+        assertEquals(expected, actual);
+        return actual;
+    }
+
     @Test
     void test0() {
         var froms = List.of(
@@ -57,12 +65,11 @@ public class KruskalMSTTest {
 
 
         System.out.println();
-        assertEquals(12, KruskalMST.kruskals(
-            1,
+        assertBothKruskalImplementationsAgree(12,
             froms,
             tos,
             weights 
-        ));
+        );
     }
 
     @Test
@@ -95,12 +102,11 @@ public class KruskalMSTTest {
 40,
 60
         );
-        assertEquals(150, KruskalMST.kruskals(
-            1,
+        assertBothKruskalImplementationsAgree(150,
             froms,
             tos,
             weights 
-        ));
+        );
     }
 
     // Looks for src/test/resources/KruskalMSTTest_test5.txt
@@ -127,11 +133,10 @@ public class KruskalMSTTest {
             weights.add(nums[2]);
         }
 
-        assertEquals(6359060, KruskalMST.kruskals(
-            1,
+        assertBothKruskalImplementationsAgree(6359060,
             froms,
             tos,
             weights
-        ));
+        );
     }
 }
