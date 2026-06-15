@@ -106,10 +106,12 @@ public class KruskalMST {
             }
             {
                     List<Number> numList = new ArrayList<>();
+                    numList.add(123);
                     readFromList(numList);    
             }            
             {
                     List<Integer> intList = new ArrayList<>();
+                    intList.add(123);
                     readFromList(intList);    
             }            
         }
@@ -119,11 +121,6 @@ public class KruskalMST {
         public static void readFromList(List<? extends Number>  list) {
             var num = list.get(0);
             System.out.printf("readFromList %s: %d\n", list, num);
-
-            {
-                List<Object> objList = new ArrayList<>();
-                writeToList(objList);
-            }
         }
     }
 
@@ -200,72 +197,48 @@ public class KruskalMST {
             }
         }
         edges.sort((l, r) -> Integer.compare(l.get(2), r.get(2)));
-        
-        System.out.printf("sorted edges: %s\n", edges);
-        
-        var result  = new ArrayList<List<Integer>>();
-        var nodeToRoot = new HashMap<Integer, Integer>();
+
+        var maxNode = gNodes;
         for(var edge : edges) {
-            var formCycle = formCycle(nodeToRoot, edge);
-            if(formCycle) continue;
+            maxNode = Math.max(maxNode, Math.max(edge.get(0), edge.get(1)));
+        }
 
-            union(nodeToRoot, edge);
-            result.add(edge);
+        var parent = new int[maxNode + 1];
+        var rank = new int[maxNode + 1];
+        for(int i = 1; i <= maxNode; i++) {
+            parent[i] = i;
+            rank[i] = 0;
         }
-        
-        return result.stream().mapToInt(e -> e.get(2)).sum();
+
+        var totalWeight = 0;
+        for(var edge : edges) {
+            int a = edge.get(0);
+            int b = edge.get(1);
+            int rootA = find(parent, a);
+            int rootB = find(parent, b);
+            if(rootA == rootB) continue;
+            union(parent, rank, rootA, rootB);
+            totalWeight += edge.get(2);
+        }
+
+        return totalWeight;
     }
-    static void union(Map<Integer, Integer> nodeToRoot, List<Integer> edge) {
-        System.out.printf("union edge %s to map %s...\n", edge, nodeToRoot);
-        var a = edge.get(0);
-        var b = edge.get(1);
-        var aParent = nodeToRoot.getOrDefault(a, null);
-        var bParent = nodeToRoot.getOrDefault(b, null);
-        if(aParent == null && bParent == null) {
-            nodeToRoot.put(a, null);
-            nodeToRoot.put(b, a);
-            return;
+
+    static int find(int[] parent, int node) {
+        if(parent[node] == node) {
+            return node;
         }
-        
-        if(aParent == null) {
-            nodeToRoot.put(a, b);
-        } else if(bParent == null) {
-            nodeToRoot.put(b, a);
+        return parent[node] = find(parent, parent[node]);
+    }
+
+    static void union(int[] parent, int[] rank, int rootA, int rootB) {
+        if(rank[rootA] < rank[rootB]) {
+            parent[rootA] = rootB;
+        } else if(rank[rootB] < rank[rootA]) {
+            parent[rootB] = rootA;
         } else {
-            // TODO: b=>a isn't optimal
-            nodeToRoot.put(b, a);
-            // do {
-            //     var tmp = nodeToRoot.getOrDefault(bParent, null);
-            //     if(tmp == null) {
-            //         nodeToRoot.put(bParent, a);
-            //         break;
-            //     } else {
-            //         bParent = tmp;
-            //     }
-            // } while(true);
+            parent[rootB] = rootA;
+            rank[rootA]++;
         }
     }
-    static boolean formCycle(Map<Integer, Integer> nodeToRoot, List<Integer> edge) {
-        var nodeA = edge.get(0);
-        var nodeB = edge.get(1);
-        if(!nodeToRoot.containsKey(nodeA)) return false;
-        if(!nodeToRoot.containsKey(nodeB)) return false;
-        
-        var aParent = getRoot(nodeToRoot, nodeA);
-        var bParent = getRoot(nodeToRoot, nodeB);
-        return (aParent == bParent);
-    }
-    static int getRoot(Map<Integer, Integer> nodeToRoot, Integer node) {
-        while(node != null) {
-            var parent = nodeToRoot.getOrDefault(node, null);
-            if(parent==null) {
-                return node;
-            } else {
-                node = parent;
-            }
-        }
-
-        assert false;
-        return -9;
-    }    
 }
