@@ -106,10 +106,12 @@ public class KruskalMST {
             }
             {
                     List<Number> numList = new ArrayList<>();
+                    numList.add(123);
                     readFromList(numList);    
             }            
             {
                     List<Integer> intList = new ArrayList<>();
+                    intList.add(123);
                     readFromList(intList);    
             }            
         }
@@ -122,7 +124,7 @@ public class KruskalMST {
 
             {
                 List<Object> objList = new ArrayList<>();
-                writeToList(objList);
+                // writeToList(objList); // avoid infinite recursion in this example path
             }
         }
     }
@@ -206,54 +208,34 @@ public class KruskalMST {
         var result  = new ArrayList<List<Integer>>();
         var nodeToRoot = new HashMap<Integer, Integer>();
         for(var edge : edges) {
-            var formCycle = formCycle(nodeToRoot, edge);
-            if(formCycle) continue;
-
-            union(nodeToRoot, edge);
-            result.add(edge);
+            if(union(nodeToRoot, edge)) {
+                result.add(edge);
+            }
         }
         
         return result.stream().mapToInt(e -> e.get(2)).sum();
     }
-    static void union(Map<Integer, Integer> nodeToRoot, List<Integer> edge) {
+    static boolean union(Map<Integer, Integer> nodeToRoot, List<Integer> edge) {
         System.out.printf("union edge %s to map %s...\n", edge, nodeToRoot);
         var a = edge.get(0);
         var b = edge.get(1);
-        var aParent = nodeToRoot.getOrDefault(a, null);
-        var bParent = nodeToRoot.getOrDefault(b, null);
-        if(aParent == null && bParent == null) {
-            nodeToRoot.put(a, null);
-            nodeToRoot.put(b, a);
-            return;
+        var rootA = getRoot(nodeToRoot, a);
+        var rootB = getRoot(nodeToRoot, b);
+        if (rootA == rootB) {
+            return false;
         }
-        
-        if(aParent == null) {
-            nodeToRoot.put(a, b);
-        } else if(bParent == null) {
-            nodeToRoot.put(b, a);
-        } else {
-            // TODO: b=>a isn't optimal
-            nodeToRoot.put(b, a);
-            // do {
-            //     var tmp = nodeToRoot.getOrDefault(bParent, null);
-            //     if(tmp == null) {
-            //         nodeToRoot.put(bParent, a);
-            //         break;
-            //     } else {
-            //         bParent = tmp;
-            //     }
-            // } while(true);
-        }
+        nodeToRoot.put(rootB, rootA);
+        return true;
     }
     static boolean formCycle(Map<Integer, Integer> nodeToRoot, List<Integer> edge) {
         var nodeA = edge.get(0);
         var nodeB = edge.get(1);
         if(!nodeToRoot.containsKey(nodeA)) return false;
         if(!nodeToRoot.containsKey(nodeB)) return false;
-        
+
         var aParent = getRoot(nodeToRoot, nodeA);
         var bParent = getRoot(nodeToRoot, nodeB);
-        return (aParent == bParent);
+        return aParent == bParent;
     }
     static int getRoot(Map<Integer, Integer> nodeToRoot, Integer node) {
         while(node != null) {
