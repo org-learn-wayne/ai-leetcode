@@ -121,6 +121,11 @@ public class KruskalMST {
         public static void readFromList(List<? extends Number>  list) {
             var num = list.get(0);
             System.out.printf("readFromList %s: %d\n", list, num);
+
+            {
+                List<Object> objList = new ArrayList<>();
+                // writeToList(objList); // avoid infinite recursion in this example path
+            }
         }
     }
 
@@ -197,73 +202,52 @@ public class KruskalMST {
             }
         }
         edges.sort((l, r) -> Integer.compare(l.get(2), r.get(2)));
-
-        // Use map-based DSU to support sparse node ids
-        var parent = new HashMap<Integer, Integer>();
-        var rank = new HashMap<Integer, Integer>();
-
+        
+        System.out.printf("sorted edges: %s\n", edges);
+        
+        var result  = new ArrayList<List<Integer>>();
+        var nodeToRoot = new HashMap<Integer, Integer>();
         for(var edge : edges) {
-            int a = edge.get(0);
-            int b = edge.get(1);
-            parent.putIfAbsent(a, a);
-            parent.putIfAbsent(b, b);
-            rank.putIfAbsent(a, 0);
-            rank.putIfAbsent(b, 0);
+            if(union(nodeToRoot, edge)) {
+                result.add(edge);
+            }
+        }
+        
+        return result.stream().mapToInt(e -> e.get(2)).sum();
+    }
+    static boolean union(Map<Integer, Integer> nodeToRoot, List<Integer> edge) {
+        System.out.printf("union edge %s to map %s...\n", edge, nodeToRoot);
+        var a = edge.get(0);
+        var b = edge.get(1);
+        var rootA = getRoot(nodeToRoot, a);
+        var rootB = getRoot(nodeToRoot, b);
+        if (rootA == rootB) {
+            return false;
+        }
+        nodeToRoot.put(rootB, rootA);
+        return true;
+    }
+    static boolean formCycle(Map<Integer, Integer> nodeToRoot, List<Integer> edge) {
+        var nodeA = edge.get(0);
+        var nodeB = edge.get(1);
+        if(!nodeToRoot.containsKey(nodeA)) return false;
+        if(!nodeToRoot.containsKey(nodeB)) return false;
+
+        var aParent = getRoot(nodeToRoot, nodeA);
+        var bParent = getRoot(nodeToRoot, nodeB);
+        return aParent == bParent;
+    }
+    static int getRoot(Map<Integer, Integer> nodeToRoot, Integer node) {
+        while(node != null) {
+            var parent = nodeToRoot.getOrDefault(node, null);
+            if(parent==null) {
+                return node;
+            } else {
+                node = parent;
+            }
         }
 
-        var totalWeight = 0;
-        for(var edge : edges) {
-            int a = edge.get(0);
-            int b = edge.get(1);
-            int rootA = findAndCompress(parent, a);
-            int rootB = findAndCompress(parent, b);
-            if(rootA == rootB) continue;
-            union(parent, rank, rootA, rootB);
-            totalWeight += edge.get(2);
-        }
-
-        return totalWeight;
-    }
-
-    /**
-     * Find the representative (root) of the set containing {@code node}.
-     * This method performs path compression and will modify the {@code parent}
-     * map so that nodes visited on the way to the root point directly to the root.
-     *
-     * @param parent map from node to parent (may be updated)
-     * @param node node to find
-     * @return root representative of the node's set
-     */
-    static int findAndCompress(Map<Integer, Integer> parent, int node) {
-        parent.putIfAbsent(node, node);
-        int p = parent.get(node);
-        if(p == node) return node;
-        int r = findAndCompress(parent, p);
-        parent.put(node, r);
-        return r;
-    }
-
-    /**
-     * Union two sets identified by their roots {@code rootA} and {@code rootB}.
-     * Uses union-by-rank heuristic and updates both {@code parent} and
-     * {@code rank} maps accordingly.
-     *
-     * @param parent map from node to parent (will be updated)
-     * @param rank map storing tree rank/approximate height (will be updated)
-     * @param rootA root of first set
-     * @param rootB root of second set
-     */
-    static void union(Map<Integer, Integer> parent, Map<Integer, Integer> rank, int rootA, int rootB) {
-        // rootA and rootB are canonical roots returned by findAndCompress()
-        int rankA = rank.getOrDefault(rootA, 0);
-        int rankB = rank.getOrDefault(rootB, 0);
-        if(rankA < rankB) {
-            parent.put(rootA, rootB);
-        } else if(rankB < rankA) {
-            parent.put(rootB, rootA);
-        } else {
-            parent.put(rootB, rootA);
-            rank.put(rootA, rankA + 1);
-        }
-    }
+        assert false;
+        return -9;
+    }    
 }
