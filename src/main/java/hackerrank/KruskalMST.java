@@ -244,25 +244,26 @@ public class KruskalMST {
     }
 
     /**
-     * Union two sets identified by their roots {@code ra} and {@code rb}.
+     * Union two sets identified by their roots {@code rootA} and {@code rootB}.
      * Uses union-by-rank heuristic and updates both {@code parent} and
      * {@code rank} maps accordingly.
      *
      * @param parent map from node to parent (will be updated)
      * @param rank map storing tree rank/approximate height (will be updated)
-     * @param ra root of first set
-     * @param rb root of second set
+     * @param rootA root of first set
+     * @param rootB root of second set
      */
-    static void union(Map<Integer, Integer> parent, Map<Integer, Integer> rank, int ra, int rb) {
-        int rra = rank.getOrDefault(ra, 0);
-        int rrb = rank.getOrDefault(rb, 0);
-        if(rra < rrb) {
-            parent.put(ra, rb);
-        } else if(rrb < rra) {
-            parent.put(rb, ra);
+    static void union(Map<Integer, Integer> parent, Map<Integer, Integer> rank, int rootA, int rootB) {
+        // rootA and rootB are canonical roots returned by findAndCompress()
+        int rankA = rank.getOrDefault(rootA, 0);
+        int rankB = rank.getOrDefault(rootB, 0);
+        if(rankA < rankB) {
+            parent.put(rootA, rootB);
+        } else if(rankB < rankA) {
+            parent.put(rootB, rootA);
         } else {
-            parent.put(rb, ra);
-            rank.put(ra, rra + 1);
+            parent.put(rootB, rootA);
+            rank.put(rootA, rankA + 1);
         }
     }
 }
