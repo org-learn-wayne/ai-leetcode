@@ -1,0 +1,17 @@
+sku,URL,date,name,price,note
+000,x.com,2026-01-01,N000,110,blah
+000,x.com,2026-01-02,N000,120,blah
+000,x.com,2026-01-03,N000,130,blah
+000,x.com,2026-01-04,N000,140,blah
+000,x.com,2026-01-05,N000,150,blah
+000,x.com,2026-01-06,N000,160,blah
+01a,x.com,2026-01-01,N01a,101,blah
+01a,x.com,2026-01-02,N01a,111,blah
+01a,x.com,2026-01-03,N01a,113,blah
+01a,x.com,2026-01-04,N01a,103,blah
+01a,x.com,2026-01-05,N01a,115,blah
+01a,x.com,2026-01-06,N01a,117,blah
+01a,x.com,2026-01-07,N01a,119,blah
+01a,x.com,2026-01-08,N01a,105,blah
+01a,x.com,2026-01-09,N01a,107,blah
+01a,x.com,2026-01-10,N01a,109,blah
